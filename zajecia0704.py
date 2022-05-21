@@ -213,50 +213,50 @@ week_end, tow_end = date2tow(time_end)[0:2]
 # Otwieramy dużą pętlę
 dt = 30
 
-# def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
-wsp_popr = np.empty((0,3))
-for t in range(tow, tow_end+1, dt):
+def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
+    wsp_popr = np.empty((0,3))
+    for t in range(tow, tow_end+1, dt):
 
-    sats_input = (iobs[ :,2] == t)
-    sats = iobs[sats_input, 0]
-    Pobs = obs[sats_input]
+        sats_input = (iobs[ :,2] == t)
+        sats = iobs[sats_input, 0]
+        Pobs = obs[sats_input]
 
-    wsp_obs = XYZ_ref
-    delta_t_r = 0  
-    tau = 0.072
+        wsp_obs = XYZ_ref
+        delta_t_r = 0  
+        tau = 0.072
 
-    for i in range(3):
-        y = np.empty((0,1))
-        A = np.empty((0,4))
-        for j, sat in enumerate(sats):
-            tr = t + delta_t_r - tau
-            X0s, Y0s, Z0s, delta_t_rel_s = satpos(tr, sat, u, we, c)
-            Xsrot = popr_wsp(X0s, Y0s, Z0s, we, tau)
-            ro_r_s = math.sqrt(pow((Xsrot[0] - wsp_obs[0]),2) + pow((Xsrot[1] - wsp_obs[1]),2) + pow((Xsrot[2] - wsp_obs[2]),2))
-            # print(sat, ": ", ro_r_s)
-            az, el, H = azymut_elewacja_wys(wsp_obs, Xsrot)
-            tropo = tropo_hopfield(H, el)
-            
-            if el >= maska:
-                Pcalc = ro_r_s - c*delta_t_rel_s + c*delta_t_r # + tropo # + jono
-                y = np.append(y, np.array([Pcalc - Pobs[j]]))
-                A_sat = np.array((-(Xsrot[0] - wsp_obs[0])/ro_r_s, -(Xsrot[1] - wsp_obs[1])/ro_r_s, -(Xsrot[2] - wsp_obs[2])/ro_r_s, 1))
-                A = np.vstack((A, A_sat))
-            
-        Q = -np.linalg.inv(np.dot(A.T, A))
-        Z = np.dot(Q, A.T)
-        x = np.dot(Z, y)
+        for i in range(3):
+            y = np.empty((0,1))
+            A = np.empty((0,4))
+            for j, sat in enumerate(sats):
+                tr = t + delta_t_r - tau
+                X0s, Y0s, Z0s, delta_t_rel_s = satpos(tr, sat, u, we, c)
+                Xsrot = popr_wsp(X0s, Y0s, Z0s, we, tau)
+                ro_r_s = math.sqrt(pow((Xsrot[0] - wsp_obs[0]),2) + pow((Xsrot[1] - wsp_obs[1]),2) + pow((Xsrot[2] - wsp_obs[2]),2))
+                # print(sat, ": ", ro_r_s)
+                az, el, H = azymut_elewacja_wys(wsp_obs, Xsrot)
+                tropo = tropo_hopfield(H, el)
+                
+                if el >= maska:
+                    Pcalc = ro_r_s - c*delta_t_rel_s + c*delta_t_r # + tropo # + jono
+                    y = np.append(y, np.array([Pcalc - Pobs[j]]))
+                    A_sat = np.array((-(Xsrot[0] - wsp_obs[0])/ro_r_s, -(Xsrot[1] - wsp_obs[1])/ro_r_s, -(Xsrot[2] - wsp_obs[2])/ro_r_s, 1))
+                    A = np.vstack((A, A_sat))
+                
+            Q = -np.linalg.inv(np.dot(A.T, A))
+            Z = np.dot(Q, A.T)
+            x = np.dot(Z, y)
 
-        wsp_obs = np.add(wsp_obs, x[0:3])
-        delta_t_r += x[3]/c
-        tau = ro_r_s/c
+            wsp_obs = np.add(wsp_obs, x[0:3])
+            delta_t_r += x[3]/c
+            tau = ro_r_s/c
 
-    wsp_popr = np.vstack((wsp_popr, wsp_obs))
-print(wsp_popr)
-#     return wsp_popr
-#             # print(tau, " ", X0s, " ", Y0s, " ", Z0s, '\n')
+        wsp_popr = np.vstack((wsp_popr, wsp_obs))
+    print(wsp_popr)
+    return wsp_popr
+            # print(tau, " ", X0s, " ", Y0s, " ", Z0s, '\n')
 
-# XYZ_obl = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
-# bledy = bledy_wsp(XYZ_ref, XYZ_obl)
-# np.savetxt('test.txt', bledy, delimiter=', ', fmt='%1.8f')
+XYZ_obl = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
+bledy = bledy_wsp(XYZ_ref, XYZ_obl)
+np.savetxt('test.txt', bledy, delimiter=', ', fmt='%1.8f')
 # === === === === === SPP
