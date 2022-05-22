@@ -258,5 +258,5 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
 
 XYZ_obl = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
 bledy = bledy_wsp(XYZ_ref, XYZ_obl)
-np.savetxt('test.txt', bledy, delimiter=', ', fmt='%1.8f')
+np.savetxt('./wyniki/test.txt', bledy, delimiter=', ', fmt='%1.8f')
 # === === === === === SPP
