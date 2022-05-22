@@ -181,25 +181,18 @@ def tropo_saastamoinen(H, el):
 
     return tropo
 def bledy_wsp(XYZ_ref, XYZ_obl):
-    def fun(a):
-        return a - XYZ_ref
+    def oblicz_bledy(XYZ):
+        return XYZ - XYZ_ref
 
-    bledy = np.apply_along_axis(fun, 1, XYZ_obl)
+    def oblicz_bledy_neu(XYZ):
+        NEU_bledy, h = hirvonen(XYZ)
+        return NEU_bledy
 
-    #===
-
-    # bledy_neu, h = hirvonen(bledy) #zwracaj h, N = 40
+    XYZ_bledy = np.apply_along_axis(oblicz_bledy, 1, XYZ_obl)
+    NEU_bledy = np.apply_along_axis(oblicz_bledy_neu, 1, XYZ_bledy)
+    print(NEU_bledy)
     
-    # Xrs = np.transpose(np.array(XYZ_obl - XYZ_ref))
-
-    # fi = bledy_neu[0]
-    # la = bledy_neu[1]
-    # neu = np.array([[-math.sin(fi) * math.cos(la), -math.sin(la), math.cos(fi) * math.cos(la)],
-    #                 [-math.sin(fi) * math.sin(la), math.cos(la), math.cos(fi) * math.sin(la)],
-    #                 [math.cos(fi), 0, math.sin(fi)]])
-    # vNEU = np.dot(np.transpose(neu), Xrs)
-
-    return bledy
+    return XYZ_bledy, NEU_bledy
 
 # spisanie współrzędnych przybliżonych odbiornika z pliku OBS
 XYZ_ref = ((linecache.getline(obs_file, 12)).split())[0:3]
@@ -212,7 +205,6 @@ week_end, tow_end = date2tow(time_end)[0:2]
 
 # Otwieramy dużą pętlę
 dt = 30
-
 def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
     wsp_popr = np.empty((0,3))
     for t in range(tow, tow_end+1, dt):
@@ -254,9 +246,9 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
         wsp_popr = np.vstack((wsp_popr, wsp_obs))
     print(wsp_popr)
     return wsp_popr
-            # print(tau, " ", X0s, " ", Y0s, " ", Z0s, '\n')
 
 XYZ_obl = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
-bledy = bledy_wsp(XYZ_ref, XYZ_obl)
-np.savetxt('./wyniki/test.txt', bledy, delimiter=', ', fmt='%1.8f')
+XYZ_bledy, NEU_bledy = bledy_wsp(XYZ_ref, XYZ_obl)
+
+np.savetxt('./wyniki/test.txt', XYZ_bledy, delimiter=', ', fmt='%1.8f')
 # === === === === === SPP
