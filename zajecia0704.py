@@ -190,7 +190,6 @@ def bledy_wsp(XYZ_ref, XYZ_obl):
 
     XYZ_bledy = np.apply_along_axis(oblicz_bledy, 1, XYZ_obl)
     NEU_bledy = np.apply_along_axis(oblicz_bledy_neu, 1, XYZ_bledy)
-    print(NEU_bledy)
     
     return XYZ_bledy, NEU_bledy
 
@@ -251,4 +250,3 @@ XYZ_obl = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
 XYZ_bledy, NEU_bledy = bledy_wsp(XYZ_ref, XYZ_obl)
 
 np.savetxt('./wyniki/test.txt', XYZ_bledy, delimiter=', ', fmt='%1.8f')
-# === === === === === SPP
