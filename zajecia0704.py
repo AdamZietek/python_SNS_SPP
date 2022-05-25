@@ -19,6 +19,7 @@ maska = 10
 u = 3.986005 * pow(10, 14)
 we = 7.2921151467 * pow(10, -5)
 c = 299792458.0 # predkosc swiatla
+dt = 30
 
 # usuniecie satelity 11
 nav = np.delete(nav, np.where(inav == 11), axis=0)
@@ -202,8 +203,6 @@ XYZ_ref = np.array(XYZ_ref)
 week, tow = date2tow(time_start)[0:2]
 week_end, tow_end = date2tow(time_end)[0:2]
 
-# Otwieramy dużą pętlę
-dt = 30
 def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
     wsp_popr = np.empty((0,3))
     for t in range(tow, tow_end+1, dt):
@@ -248,5 +247,17 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
 
 XYZ_obl = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
 XYZ_bledy, NEU_bledy = bledy_wsp(XYZ_ref, XYZ_obl)
-
 np.savetxt('./wyniki/test.txt', XYZ_bledy, delimiter=', ', fmt='%1.8f')
+
+def analiza_bledow(bledy):
+    std_dev = np.std(bledy, axis=0)
+    mean_square_err = (np.square(bledy)).mean(axis=0)
+    min_val = np.amin(bledy, axis=0)
+    max_val = np.amax(bledy, axis=0)
+
+    print(bledy)
+    print(max_val)
+
+    return std_dev, mean_square_err, min_val, max_val
+
+analiza_bledow(XYZ_bledy)
