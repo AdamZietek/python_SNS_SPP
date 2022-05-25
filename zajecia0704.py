@@ -21,15 +21,28 @@ we = 7.2921151467 * pow(10, -5)
 c = 299792458.0 # predkosc swiatla
 dt = 30
 
-# usuniecie satelity 11
-nav = np.delete(nav, np.where(inav == 11), axis=0)
-inav = np.delete(inav, np.where(inav == 11))
-obs = np.delete(obs, np.where(iobs[:,0] == 11))
-iobs = np.delete(iobs, np.where(iobs[:,0] == 11), axis=0)
+def wsp_odbiornika(obs_file):
+    # spisanie współrzędnych przybliżonych odbiornika z pliku OBS
+    XYZ_ref = ((linecache.getline(obs_file, 12)).split())[0:3]
+    XYZ_ref = [float(i) for i in XYZ_ref]
+    XYZ_ref = np.array(XYZ_ref)
 
-# usuniecie nan
-iobs = np.delete(iobs, np.where(np.isnan(obs)), axis=0)
-obs = np.delete(obs, np.where(np.isnan(obs)))
+    return XYZ_ref
+XYZ_ref = wsp_odbiornika(obs_file)
+
+def porzadek(nav, inav, obs, iobs):
+    # usuniecie satelity 11
+    nav_re = np.delete(nav, np.where(inav == 11), axis=0)
+    inav_re = np.delete(inav, np.where(inav == 11))
+    obs_re = np.delete(obs, np.where(iobs[:,0] == 11))
+    iobs_re = np.delete(iobs, np.where(iobs[:,0] == 11), axis=0)
+
+    # usuniecie nan
+    iobs = np.delete(iobs_re, np.where(np.isnan(obs)), axis=0)
+    obs = np.delete(obs_re, np.where(np.isnan(obs)))
+
+    return nav_re, inav_re, obs_re, iobs_re
+nav, inav, obs, iobs = porzadek(nav, inav, obs, iobs)
 
 # najwazniejsze funkcje
 def satpos(tobs, sat_idx, u, we, c):
@@ -194,11 +207,6 @@ def bledy_wsp(XYZ_ref, XYZ_obl):
     
     return XYZ_bledy, NEU_bledy
 
-# spisanie współrzędnych przybliżonych odbiornika z pliku OBS
-XYZ_ref = ((linecache.getline(obs_file, 12)).split())[0:3]
-XYZ_ref = [float(i) for i in XYZ_ref]
-XYZ_ref = np.array(XYZ_ref)
-
 # Przeliczenie daty początkowej i końcowej do sekund tygodnia GPS
 week, tow = date2tow(time_start)[0:2]
 week_end, tow_end = date2tow(time_end)[0:2]
@@ -244,7 +252,6 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
         wsp_popr = np.vstack((wsp_popr, wsp_obs))
     print(wsp_popr)
     return wsp_popr
-
 XYZ_obl = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
 XYZ_bledy, NEU_bledy = bledy_wsp(XYZ_ref, XYZ_obl)
 np.savetxt('./wyniki/test.txt', XYZ_bledy, delimiter=', ', fmt='%1.8f')
@@ -255,9 +262,8 @@ def analiza_bledow(bledy):
     min_val = np.amin(bledy, axis=0)
     max_val = np.amax(bledy, axis=0)
 
-    print(bledy)
-    print(max_val)
+    # print(bledy)
+    # print(max_val)
 
     return std_dev, mean_square_err, min_val, max_val
-
-analiza_bledow(XYZ_bledy)
+std_dev, mean_square_err, min_val, max_val = analiza_bledow(XYZ_bledy)
