@@ -4,12 +4,14 @@ import numpy as np
 import math
 import linecache
 from hirvonen import hirvonen
+from matplotlib import pyplot as plt
+import datetime
 
 nav_file = './dane/nav.rnx'
 obs_file = './dane/obs.rnx'
 
 time_start =  [2022, 3, 21, 0, 0, 0]  
-time_end =    [2022, 3, 21, 0, 0, 30] 
+time_end =    [2022, 3, 21, 0, 2, 0] 
 
 nav, inav = readrnxnav(nav_file)
 obs, iobs = readrnxobs(obs_file, time_start, time_end, 'G')
@@ -32,16 +34,16 @@ XYZ_ref = wsp_odbiornika(obs_file)
 
 def porzadek(nav, inav, obs, iobs):
     # usuniecie satelity 11
-    nav_re = np.delete(nav, np.where(inav == 11), axis=0)
-    inav_re = np.delete(inav, np.where(inav == 11))
-    obs_re = np.delete(obs, np.where(iobs[:,0] == 11))
-    iobs_re = np.delete(iobs, np.where(iobs[:,0] == 11), axis=0)
+    nav = np.delete(nav, np.where(inav == 11), axis=0)
+    inav = np.delete(inav, np.where(inav == 11))
+    obs = np.delete(obs, np.where(iobs[:,0] == 11))
+    iobs = np.delete(iobs, np.where(iobs[:,0] == 11), axis=0)
 
     # usuniecie nan
-    iobs = np.delete(iobs_re, np.where(np.isnan(obs)), axis=0)
-    obs = np.delete(obs_re, np.where(np.isnan(obs)))
+    iobs = np.delete(iobs, np.where(np.isnan(obs)), axis=0)
+    obs = np.delete(obs, np.where(np.isnan(obs)))
 
-    return nav_re, inav_re, obs_re, iobs_re
+    return nav, inav, obs, iobs
 nav, inav, obs, iobs = porzadek(nav, inav, obs, iobs)
 
 # najwazniejsze funkcje
@@ -213,6 +215,7 @@ week_end, tow_end = date2tow(time_end)[0:2]
 
 def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
     wsp_popr = np.empty((0,3))
+    czas = []
     for t in range(tow, tow_end+1, dt):
 
         sats_input = (iobs[ :,2] == t)
@@ -250,9 +253,11 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
             tau = ro_r_s/c
 
         wsp_popr = np.vstack((wsp_popr, wsp_obs))
+        czas.append(datetime.timedelta(seconds=t-tow))
+    # print(datetime.timedelta(seconds=t-tow))
     print(wsp_popr)
-    return wsp_popr
-XYZ_obl = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
+    return wsp_popr, czas
+XYZ_obl, czas = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
 XYZ_bledy, NEU_bledy = bledy_wsp(XYZ_ref, XYZ_obl)
 np.savetxt('./wyniki/test.txt', XYZ_bledy, delimiter=', ', fmt='%1.8f')
 
@@ -267,3 +272,19 @@ def analiza_bledow(bledy):
 
     return std_dev, mean_square_err, min_val, max_val
 std_dev, mean_square_err, min_val, max_val = analiza_bledow(XYZ_bledy)
+
+def wykres_bledow(bledy, czas):
+    fig = plt.figure()
+    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+    ax.plot(bledy)
+
+    ax.set_title("Wykres błędów poszczególnych współrzędnych w czasie doby")
+    ax.set_xlabel("Czas")
+    ax.set_ylabel("Błąd[m]")
+
+    ax.set_xticks(np.arange(0, len(czas), 1))
+    ax.set_xticklabels(czas)
+
+    plt.show()
+
+wykres_bledow(XYZ_bledy, czas)
