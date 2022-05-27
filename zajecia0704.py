@@ -5,13 +5,14 @@ import math
 import linecache
 from hirvonen import hirvonen
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MaxNLocator
 import datetime
 
 nav_file = './dane/nav.rnx'
 obs_file = './dane/obs.rnx'
 
 time_start =  [2022, 3, 21, 0, 0, 0]  
-time_end =    [2022, 3, 21, 0, 2, 0] 
+time_end =    [2022, 3, 21, 0, 20, 0] 
 
 nav, inav = readrnxnav(nav_file)
 obs, iobs = readrnxobs(obs_file, time_start, time_end, 'G')
@@ -217,8 +218,8 @@ def bledy_wsp(XYZ_ref, XYZ_obl):
     XYZ_bledy = np.apply_along_axis(oblicz_bledy, 1, XYZ_obl)
     NEU_bledy = np.apply_along_axis(oblicz_bledy_neu, 1, XYZ_bledy)
 
-    print(XYZ_bledy)
-    print(NEU_bledy)
+    # print(XYZ_bledy)
+    # print(NEU_bledy)
     
     return XYZ_bledy, NEU_bledy
 
@@ -266,7 +267,7 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
             tau = ro_r_s/c
 
         wsp_popr = np.vstack((wsp_popr, wsp_obs))
-        czas.append(datetime.timedelta(seconds=t-tow))
+        czas.append(str(datetime.timedelta(seconds=t-tow)))
     # print(datetime.timedelta(seconds=t-tow))
     print(wsp_popr)
     return wsp_popr, czas
@@ -286,20 +287,22 @@ def analiza_bledow(bledy):
     return std_dev, mean_square_err, min_val, max_val
 std_dev, mean_square_err, min_val, max_val = analiza_bledow(XYZ_bledy)
 
-def wykres_bledow(bledy, czas):
+def wykres_bledow(czas, bledy):
     fig = plt.figure()
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-    ax.plot(bledy)
+    ax.plot(czas, bledy)
 
     ax.set_title("Wykres błędów poszczególnych współrzędnych w czasie doby")
     ax.set_xlabel("Czas")
     ax.set_ylabel("Błąd[m]")
 
-    ax.set_xticks(np.arange(0, len(czas), 1))
-    ax.set_xticklabels(czas)
+    ax.xaxis.set_major_locator(MaxNLocator(5)) 
+    # ax.set_xticks(np.arange(0, len(czas), 1))
+    # ax.set_xticklabels(czas)
 
     plt.show()
 
-# wykres_bledow(XYZ_bledy, czas)
+wykres_bledow(czas, XYZ_bledy)
+wykres_bledow(czas, NEU_bledy)
 
 # macierz razy trzy wspolrzedne w petli, rtneu to samo co w elewacji
