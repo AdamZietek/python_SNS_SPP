@@ -201,11 +201,24 @@ def bledy_wsp(XYZ_ref, XYZ_obl):
         return XYZ - XYZ_ref
 
     def oblicz_bledy_neu(XYZ):
-        NEU_bledy, h = hirvonen(XYZ)
+        BLH_bledy, h = hirvonen(XYZ_ref)
+
+        Xrs = np.transpose(np.array(XYZ))
+        
+        fi = BLH_bledy[0]
+        la = BLH_bledy[1]
+        neu = np.array([[-math.sin(fi) * math.cos(la), -math.sin(la), math.cos(fi) * math.cos(la)],
+                        [-math.sin(fi) * math.sin(la), math.cos(la), math.cos(fi) * math.sin(la)],
+                        [math.cos(fi), 0, math.sin(fi)]])
+        NEU_bledy = np.dot(np.transpose(neu), Xrs)
+
         return NEU_bledy
 
     XYZ_bledy = np.apply_along_axis(oblicz_bledy, 1, XYZ_obl)
     NEU_bledy = np.apply_along_axis(oblicz_bledy_neu, 1, XYZ_bledy)
+
+    print(XYZ_bledy)
+    print(NEU_bledy)
     
     return XYZ_bledy, NEU_bledy
 
@@ -287,4 +300,6 @@ def wykres_bledow(bledy, czas):
 
     plt.show()
 
-wykres_bledow(XYZ_bledy, czas)
+# wykres_bledow(XYZ_bledy, czas)
+
+# macierz razy trzy wspolrzedne w petli, rtneu to samo co w elewacji

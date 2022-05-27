@@ -64,6 +64,7 @@ def readrnxobs(file, time_start, time_end, GNSS = 'G'):
             elif label.find('END OF HEADER') == 1:
                 break
             types_of_obs = ['C1C']
+            # types_of_obs = ['C1C', 'C2W']
         ind = np.zeros((len(types_header)))
         for n in range(len(types_of_obs)):
             i=(types_header.index(types_of_obs[n])) if types_of_obs[n] in types_header else -1#np.empty((0))
