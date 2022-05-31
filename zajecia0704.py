@@ -5,14 +5,14 @@ import math
 import linecache
 from hirvonen import hirvonen
 from matplotlib import pyplot as plt
-from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import MaxNLocator, FormatStrFormatter
 import datetime
 
-nav_file = './dane/nav.rnx'
-obs_file = './dane/obs.rnx'
+nav_file = './kod_dane/dane/nav.rnx'
+obs_file = './kod_dane/dane/obs.rnx'
 
 time_start =  [2022, 3, 21, 0, 0, 0]  
-time_end =    [2022, 3, 21, 0, 20, 0] 
+time_end =    [2022, 3, 21, 7, 12, 0] 
 
 nav, inav = readrnxnav(nav_file)
 obs, iobs = readrnxobs(obs_file, time_start, time_end, 'G')
@@ -136,8 +136,8 @@ def azymut_elewacja_wys(wsp_obs, wsp_sat):
     azymut = np.rad2deg(math.atan2(vNEU[1], vNEU[0]))
     if azymut < 0:
         azymut += np.rad2deg(2 * math.pi)
-    if azymut >= 180:
-        azymut -= 180
+    # if azymut >= 180:
+    #     azymut -= 180
     
     elev = abs(np.rad2deg(math.asin(vNEU[2] / math.sqrt(vNEU[0] ** 2 + vNEU[1] ** 2 + vNEU[2] ** 2))))
 
@@ -154,9 +154,9 @@ def tropo_hopfield(H, el):
 
     h = H - N
 
-    p = p0*pow((1-0.0000226), 5.225)
+    p = p0*pow((1-0.0000226*h), 5.225)
     t = t0 - 0.0065*h
-    Rh = Rh0*math.exp(-0.0006396)
+    Rh = Rh0*math.exp(-0.0006396*h)
     e = 6.11*Rh*pow(10, ((7.5*(t-273.15))/(t-35.85)))
 
     Nd0 = c1*(p/t)
@@ -166,18 +166,21 @@ def tropo_hopfield(H, el):
     hd = 40136 + 148.72*(t-273.15)
     hw = 11000
 
-    tropo_w0 = ((pow(10, -6))/(5))*Nd0*hd
-    tropo_d0 = ((pow(10, -6))/(5))*Nw0*hw
+    tropo_d0 = ((pow(10, -6))/(5))*Nd0*hd
+    tropo_w0 = ((pow(10, -6))/(5))*Nw0*hw
 
-    mw_el = 1/(math.sin(np.deg2rad(pow(el, 2)) + 2.25))
-    md_el = 1/(math.sin(np.deg2rad(pow(el, 2)) + 6.25))
+    mw_el = 1/(math.sin(np.deg2rad(np.sqrt(pow(el, 2) + 2.25))))
+    md_el = 1/(math.sin(np.deg2rad(np.sqrt(pow(el, 2) + 6.25))))
 
     tropo_w = tropo_w0*mw_el
     tropo_d = tropo_d0*md_el
 
     tropo = tropo_w + tropo_d
+
+    print(tropo)
     
     return tropo
+
 def tropo_saastamoinen(H, el):
     p0 = 1013.25
     t0 = 291.15
@@ -186,9 +189,9 @@ def tropo_saastamoinen(H, el):
 
     h = H - N
 
-    p = p0*pow((1-0.0000226), 5.225)
+    p = p0*pow((1-0.0000226*h), 5.225)
     t = t0 - 0.0065*h
-    Rh = Rh0*math.exp(-0.0006396)
+    Rh = Rh0*math.exp(-0.0006396*h)
     e = 6.11*Rh*pow(10, ((7.5*(t-273.15))/(t-35.85)))
 
     tropo_w0 = 0.002277*((1255/t)+0.05)*e
@@ -253,7 +256,7 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
                 tropo = tropo_hopfield(H, el)
                 
                 if el >= maska:
-                    Pcalc = ro_r_s - c*delta_t_rel_s + c*delta_t_r # + tropo # + jono
+                    Pcalc = ro_r_s - c*delta_t_rel_s + c*delta_t_r + tropo # + jono
                     y = np.append(y, np.array([Pcalc - Pobs[j]]))
                     A_sat = np.array((-(Xsrot[0] - wsp_obs[0])/ro_r_s, -(Xsrot[1] - wsp_obs[1])/ro_r_s, -(Xsrot[2] - wsp_obs[2])/ro_r_s, 1))
                     A = np.vstack((A, A_sat))
@@ -269,7 +272,7 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
         wsp_popr = np.vstack((wsp_popr, wsp_obs))
         czas.append(str(datetime.timedelta(seconds=t-tow)))
     # print(datetime.timedelta(seconds=t-tow))
-    print(wsp_popr)
+    # print(wsp_popr)
     return wsp_popr, czas
 XYZ_obl, czas = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
 XYZ_bledy, NEU_bledy = bledy_wsp(XYZ_ref, XYZ_obl)
@@ -281,28 +284,32 @@ def analiza_bledow(bledy):
     min_val = np.amin(bledy, axis=0)
     max_val = np.amax(bledy, axis=0)
 
-    # print(bledy)
+    print(mean_square_err)
     # print(max_val)
 
     return std_dev, mean_square_err, min_val, max_val
 std_dev, mean_square_err, min_val, max_val = analiza_bledow(XYZ_bledy)
 
-def wykres_bledow(czas, bledy):
-    fig = plt.figure()
-    ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-    ax.plot(czas, bledy)
+def wykres_bledow(czas, bledy, xyz_czy_neu):
+    fig, axs = plt.subplots(3, sharex=True)
+    fig.suptitle("Błędy dla poszczególnych współrzędnych w czasie")
+    xyz = ["X", "Y", "Z"]
+    neu = ["N", "E", "U"]
 
-    ax.set_title("Wykres błędów poszczególnych współrzędnych w czasie doby")
-    ax.set_xlabel("Czas")
-    ax.set_ylabel("Błąd[m]")
-
-    ax.xaxis.set_major_locator(MaxNLocator(5)) 
-    # ax.set_xticks(np.arange(0, len(czas), 1))
-    # ax.set_xticklabels(czas)
+    for i, ax in enumerate(axs.flat):
+        ax.plot(czas, bledy[0:,[2-i]])
+        # bierz dla kazdego wiersza([0:, ) wsp zyx ([2-i]])
+        # zyx zeby kolejnosc na wykresie byla dobra
+        if xyz_czy_neu == "xyz":
+            ax.set_ylabel("Błąd " + xyz[2-i] + "[m]")
+        elif xyz_czy_neu == "neu":
+            ax.set_ylabel("Błąd " + neu[2-i] + "[m]")
+        ax.xaxis.set_major_locator(MaxNLocator(7))
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
     plt.show()
 
-wykres_bledow(czas, XYZ_bledy)
-wykres_bledow(czas, NEU_bledy)
+wykres_bledow(czas, XYZ_bledy, "xyz")
+# wykres_bledow(czas, NEU_bledy, "neu")
 
 # macierz razy trzy wspolrzedne w petli, rtneu to samo co w elewacji
