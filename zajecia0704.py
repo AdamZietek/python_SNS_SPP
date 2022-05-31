@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator, FormatStrFormatter
 import datetime
 
-nav_file = './kod_dane/dane/nav.rnx'
-obs_file = './kod_dane/dane/obs.rnx'
+nav_file = './kod_dane/kod/nav.rnx'
+obs_file = './kod_dane/kod/obs.rnx'
 
 time_start =  [2022, 3, 21, 0, 0, 0]  
 time_end =    [2022, 3, 21, 7, 12, 0] 
@@ -175,10 +175,7 @@ def tropo_hopfield(H, el):
     tropo_w = tropo_w0*mw_el
     tropo_d = tropo_d0*md_el
 
-    tropo = tropo_w + tropo_d
-
-    print(tropo)
-    
+    tropo = tropo_w + tropo_d    
     return tropo
 
 def tropo_saastamoinen(H, el):
