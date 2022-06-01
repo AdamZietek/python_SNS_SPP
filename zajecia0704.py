@@ -1,4 +1,6 @@
 from os import R_OK
+
+from pygments import highlight
 from readrnx_studenci import *
 import numpy as np
 import math
@@ -7,12 +9,14 @@ from hirvonen import hirvonen
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator, FormatStrFormatter
 import datetime
+import mplcursors
+plt.style.use('seaborn-whitegrid')
 
-nav_file = './kod_dane/kod/nav.rnx'
-obs_file = './kod_dane/kod/obs.rnx'
+nav_file = './kod/nav.rnx'
+obs_file = './kod/obs.rnx'
 
-time_start =  [2022, 3, 21, 0, 0, 0]  
-time_end =    [2022, 3, 21, 7, 12, 0] 
+time_start =  [2022, 3, 21, 0, 0, 0]
+time_end =    [2022, 3, 21, 23, 59, 30] 
 
 nav, inav = readrnxnav(nav_file)
 obs, iobs = readrnxobs(obs_file, time_start, time_end, 'G')
@@ -230,6 +234,7 @@ week_end, tow_end = date2tow(time_end)[0:2]
 def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
     wsp_popr = np.empty((0,3))
     czas = []
+    l_sats = []
     for t in range(tow, tow_end+1, dt):
 
         sats_input = (iobs[ :,2] == t)
@@ -268,10 +273,11 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
 
         wsp_popr = np.vstack((wsp_popr, wsp_obs))
         czas.append(str(datetime.timedelta(seconds=t-tow)))
+        l_sats.append(len(sats))
     # print(datetime.timedelta(seconds=t-tow))
     # print(wsp_popr)
-    return wsp_popr, czas
-XYZ_obl, czas = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
+    return wsp_popr, czas, l_sats
+XYZ_obl, czas, l_sats = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
 XYZ_bledy, NEU_bledy = bledy_wsp(XYZ_ref, XYZ_obl)
 np.savetxt('./wyniki/test.txt', XYZ_bledy, delimiter=', ', fmt='%1.8f')
 
@@ -305,8 +311,49 @@ def wykres_bledow(czas, bledy, xyz_czy_neu):
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
     plt.show()
+def wykres_l_sats(czas, l_sats):
+    #plots the histogram
+    fig, ax = plt.subplots()
+    fig.suptitle("Liczba satelitów w czasie")
 
-wykres_bledow(czas, XYZ_bledy, "xyz")
+    sat = ax.bar(czas, l_sats, color='g', width=1.0, alpha = 0.5)
+    ax.set_ylabel("Liczba satelitów")
+    ax.xaxis.set_major_locator(MaxNLocator(7))
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%0.0f'))
+
+    c1 = mplcursors.cursor(sat)
+    @c1.connect("add")
+    def _(sel):
+        sel.annotation.set(position=(3,5))
+        sel.annotation.set_bbox(None)
+        sel.annotation.arrow_patch.set(color="green", linewidth=1.5)
+        text = sel.annotation.get_text().replace("x", "godzina")
+        text = text.replace("y", "liczba satelitów")
+        sel.annotation.set_text(text)
+
+    plt.show()
+
+# wykres_bledow(czas, XYZ_bledy, "xyz")
 # wykres_bledow(czas, NEU_bledy, "neu")
+wykres_l_sats(czas, l_sats)
+
+# def test():
+    
+#     x = np.linspace(0, 10, 100)
+
+#     fig, ax = plt.subplots()
+#     ax.set_title("Click on a line to display its label")
+
+#     # Plot a series of lines with increasing slopes.
+#     for i in range(1, 20):
+#         ax.plot(x, i * x, label=f"y = {i}x")
+
+#     # Use a Cursor to interactively display the label for a selected line.
+#     mplcursors.cursor().connect(
+#         "add", lambda sel: sel.annotation.set_text(sel.artist.get_label()))
+
+#     plt.show()
+
+# test()
 
 # macierz razy trzy wspolrzedne w petli, rtneu to samo co w elewacji
