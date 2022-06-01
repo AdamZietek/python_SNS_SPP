@@ -16,7 +16,7 @@ nav_file = './kod/nav.rnx'
 obs_file = './kod/obs.rnx'
 
 time_start =  [2022, 3, 21, 0, 0, 0]
-time_end =    [2022, 3, 21, 23, 59, 30] 
+time_end =    [2022, 3, 21, 1, 59, 30] 
 
 nav, inav = readrnxnav(nav_file)
 obs, iobs = readrnxobs(obs_file, time_start, time_end, 'G')
@@ -295,30 +295,40 @@ std_dev, mean_square_err, min_val, max_val = analiza_bledow(XYZ_bledy)
 
 def wykres_bledow(czas, bledy, xyz_czy_neu):
     fig, axs = plt.subplots(3, sharex=True)
+    fig.canvas.manager.set_window_title("Błędy współrzędnych")
     fig.suptitle("Błędy dla poszczególnych współrzędnych w czasie")
     xyz = ["X", "Y", "Z"]
     neu = ["N", "E", "U"]
 
     for i, ax in enumerate(axs.flat):
-        ax.plot(czas, bledy[0:,[2-i]])
+        ax.plot(czas, bledy[0:,[2-i]], alpha = 0.8)
         # bierz dla kazdego wiersza([0:, ) wsp zyx ([2-i]])
         # zyx zeby kolejnosc na wykresie byla dobra
         if xyz_czy_neu == "xyz":
             ax.set_ylabel("Błąd " + xyz[2-i] + "[m]")
         elif xyz_czy_neu == "neu":
             ax.set_ylabel("Błąd " + neu[2-i] + "[m]")
-        ax.xaxis.set_major_locator(MaxNLocator(7))
+        ax.xaxis.set_major_locator(MaxNLocator(8))
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        c1 = mplcursors.cursor(hover=True)
+        @c1.connect("add")
+        def _(sel):
+            sel.annotation.set_bbox(None)
+            sel.annotation.arrow_patch.set(color="blue", linewidth=1.5)
+            text = sel.annotation.get_text().replace("x=", "godzina: ")
+            text = text.replace("y=", "błąd[m]: ")
+            sel.annotation.set_text(text)
 
     plt.show()
 def wykres_l_sats(czas, l_sats):
     #plots the histogram
     fig, ax = plt.subplots()
+    fig.canvas.manager.set_window_title("Liczba satelitów")
     fig.suptitle("Liczba satelitów w czasie")
 
     sat = ax.bar(czas, l_sats, color='g', width=1.0, alpha = 0.5)
     ax.set_ylabel("Liczba satelitów")
-    ax.xaxis.set_major_locator(MaxNLocator(7))
+    ax.xaxis.set_major_locator(MaxNLocator(8))
     ax.yaxis.set_major_formatter(FormatStrFormatter('%0.0f'))
 
     c1 = mplcursors.cursor(sat)
@@ -332,28 +342,30 @@ def wykres_l_sats(czas, l_sats):
         sel.annotation.set_text(text)
 
     plt.show()
+def wykres_punktowy_n_e(bledy_neu):
+    fig, axs = plt.subplots()
+    fig.canvas.manager.set_window_title("Wykres punktowy błędów współrzędnych płaskich n i e")
+    fig.suptitle("Błędy poszczególnych współrzędnych n, e w czasie")
+
+    axs.scatter((bledy_neu[0:,[1]]), (bledy_neu[0:,[0]]), alpha = 0.8)
+    axs.set_ylabel("Błąd n[m]")
+    axs.set_xlabel("Błąd e[m]")
+    axs.xaxis.set_major_locator(MaxNLocator(8))
+    axs.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    c1 = mplcursors.cursor(hover=True)
+    @c1.connect("add")
+    def _(sel):
+        sel.annotation.set_bbox(None)
+        sel.annotation.arrow_patch.set(color="blue", linewidth=1.5)
+        text = sel.annotation.get_text().replace("x=", "e: ")
+        text = text.replace("y=", "n: ")
+        sel.annotation.set_text(text)
+
+    plt.show()
 
 # wykres_bledow(czas, XYZ_bledy, "xyz")
 # wykres_bledow(czas, NEU_bledy, "neu")
-wykres_l_sats(czas, l_sats)
-
-# def test():
-    
-#     x = np.linspace(0, 10, 100)
-
-#     fig, ax = plt.subplots()
-#     ax.set_title("Click on a line to display its label")
-
-#     # Plot a series of lines with increasing slopes.
-#     for i in range(1, 20):
-#         ax.plot(x, i * x, label=f"y = {i}x")
-
-#     # Use a Cursor to interactively display the label for a selected line.
-#     mplcursors.cursor().connect(
-#         "add", lambda sel: sel.annotation.set_text(sel.artist.get_label()))
-
-#     plt.show()
-
-# test()
+# wykres_l_sats(czas, l_sats)
+# wykres_punktowy_n_e(NEU_bledy)
 
 # macierz razy trzy wspolrzedne w petli, rtneu to samo co w elewacji
