@@ -303,6 +303,7 @@ def wykres_bledow(czas, bledy, xyz_czy_neu):
     fig, axs = plt.subplots(3, sharex=True)
     fig.canvas.manager.set_window_title("Błędy współrzędnych")
     fig.suptitle("Błędy dla poszczególnych współrzędnych w czasie")
+    plt.xlabel("Czas")
     xyz = ["X", "Y", "Z"]
     neu = ["N", "E", "U"]
 
@@ -316,14 +317,15 @@ def wykres_bledow(czas, bledy, xyz_czy_neu):
             ax.set_ylabel("Błąd " + neu[2-i] + "[m]")
         ax.xaxis.set_major_locator(MaxNLocator(8))
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-        c1 = mplcursors.cursor(hover=True)
-        @c1.connect("add")
-        def _(sel):
-            sel.annotation.set_bbox(None)
-            sel.annotation.arrow_patch.set(color="blue", linewidth=1.5)
-            text = sel.annotation.get_text().replace("x=", "godzina: ")
-            text = text.replace("y=", "błąd[m]: ")
-            sel.annotation.set_text(text)
+
+    c1 = mplcursors.cursor(hover=True)
+    @c1.connect("add")
+    def _(sel):
+        sel.annotation.set_bbox(None)
+        sel.annotation.arrow_patch.set(color="blue", linewidth=1.5)
+        text = sel.annotation.get_text().replace("x=", "godzina: ")
+        text = text.replace("y=", "błąd[m]: ")
+        sel.annotation.set_text(text)
 
     plt.show()
 def wykres_l_sats(czas, l_sats):
@@ -331,20 +333,20 @@ def wykres_l_sats(czas, l_sats):
     fig, ax = plt.subplots()
     fig.canvas.manager.set_window_title("Liczba satelitów")
     fig.suptitle("Liczba satelitów w czasie")
+    ax.set_xlabel("Czas")
 
     sat = ax.bar(czas, l_sats, color='g', width=1.0, alpha = 0.5)
     ax.set_ylabel("Liczba satelitów")
     ax.xaxis.set_major_locator(MaxNLocator(8))
     ax.yaxis.set_major_formatter(FormatStrFormatter('%0.0f'))
 
-    c1 = mplcursors.cursor(sat)
+    c1 = mplcursors.cursor(sat, hover=True)
     @c1.connect("add")
     def _(sel):
-        sel.annotation.set(position=(3,5))
         sel.annotation.set_bbox(None)
         sel.annotation.arrow_patch.set(color="green", linewidth=1.5)
-        text = sel.annotation.get_text().replace("x", "godzina")
-        text = text.replace("y", "liczba satelitów")
+        text = sel.annotation.get_text().replace("x=", "godzina: ")
+        text = text.replace("y=", "liczba satelitów: ")
         sel.annotation.set_text(text)
 
     plt.show()
@@ -353,16 +355,20 @@ def wykres_punktowy_n_e(bledy_neu):
     fig.canvas.manager.set_window_title("Wykres punktowy błędów współrzędnych płaskich n i e")
     fig.suptitle("Błędy poszczególnych współrzędnych n, e w czasie")
 
-    axs.scatter((bledy_neu[0:,[1]]), (bledy_neu[0:,[0]]), alpha = 0.8)
+    axs.scatter((bledy_neu[0:,[1]]), (bledy_neu[0:,[0]]), alpha = 0.2, color="grey", edgecolors="grey")
+    xy = [0, 0]
+    axs.scatter(xy[0], xy[1], alpha=0.6, color="red")
+
     axs.set_ylabel("Błąd n[m]")
     axs.set_xlabel("Błąd e[m]")
     axs.xaxis.set_major_locator(MaxNLocator(8))
     axs.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+
     c1 = mplcursors.cursor(hover=True)
     @c1.connect("add")
     def _(sel):
         sel.annotation.set_bbox(None)
-        sel.annotation.arrow_patch.set(color="blue", linewidth=1.5)
+        sel.annotation.arrow_patch.set(color="black", linewidth=1.5)
         text = sel.annotation.get_text().replace("x=", "e: ")
         text = text.replace("y=", "n: ")
         sel.annotation.set_text(text)
@@ -372,6 +378,7 @@ def wykres_dop(czas, GDOP, PDOP, TDOP):
     fig, ax = plt.subplots()
     fig.canvas.manager.set_window_title("Wykresy - współczynniki DOP")
     fig.suptitle("Wykresy wartości współczynników DOP")
+    ax.set_xlabel("Czas")
 
     ax.plot(czas, GDOP, alpha = 0.5, label="GDOP")
     ax.plot(czas, PDOP, alpha = 0.5, label="PDOP")
@@ -398,6 +405,6 @@ def wykres_dop(czas, GDOP, PDOP, TDOP):
 # wykres_bledow(czas, XYZ_bledy, "xyz")
 # wykres_bledow(czas, NEU_bledy, "neu")
 # wykres_l_sats(czas, l_sats)
-# wykres_punktowy_n_e(NEU_bledy)
-wykres_dop(czas, GDOP, PDOP, TDOP)
+wykres_punktowy_n_e(NEU_bledy)
+# wykres_dop(czas, GDOP, PDOP, TDOP)
 # macierz razy trzy wspolrzedne w petli, rtneu to samo co w elewacji
