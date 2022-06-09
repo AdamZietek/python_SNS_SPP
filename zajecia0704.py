@@ -10,13 +10,14 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator, FormatStrFormatter
 import datetime
 import mplcursors
+from klobuchar1 import klobuchar
 plt.style.use('seaborn-whitegrid')
 
 nav_file = './kod/nav.rnx'
 obs_file = './kod/obs.rnx'
 
 time_start =  [2022, 3, 21, 0, 0, 0]
-time_end =    [2022, 3, 21, 20, 5, 30] 
+time_end =    [2022, 3, 21, 0, 0, 0] 
 
 nav, inav = readrnxnav(nav_file)
 obs, iobs = readrnxobs(obs_file, time_start, time_end, 'G')
@@ -27,6 +28,8 @@ u = 3.986005 * pow(10, 14)
 we = 7.2921151467 * pow(10, -5)
 c = 299792458.0 # predkosc swiatla
 dt = 30
+alfa = [1.6764e-08,  7.4506e-09, -1.1921e-07,  0.0000e+00]
+beta = [1.1059e+05,  0.0000e+00, -2.6214e+05,  0.0000e+00] 
 
 def wsp_odbiornika(obs_file):
     # spisanie współrzędnych przybliżonych odbiornika z pliku OBS
@@ -126,12 +129,10 @@ def popr_wsp(X0s, Y0s, Z0s, we, tau):
     Xsrot = np.dot(matrix1, matrix2)
     return Xsrot
 def azymut_elewacja_wys(wsp_obs, wsp_sat):
-    wsp_obs_elips, h = hirvonen(wsp_obs) #zwracaj h, N = 40
+    fi, la, h = hirvonen(wsp_obs) #zwracaj h, N = 40
 
     Xrs = np.transpose(np.array(wsp_obs - wsp_sat))
     
-    fi = wsp_obs_elips[0]
-    la = wsp_obs_elips[1]
     neu = np.array([[-math.sin(fi) * math.cos(la), -math.sin(la), math.cos(fi) * math.cos(la)],
                     [-math.sin(fi) * math.sin(la), math.cos(la), math.cos(fi) * math.sin(la)],
                     [math.cos(fi), 0, math.sin(fi)]])
@@ -145,7 +146,7 @@ def azymut_elewacja_wys(wsp_obs, wsp_sat):
     
     elev = abs(np.rad2deg(math.asin(vNEU[2] / math.sqrt(vNEU[0] ** 2 + vNEU[1] ** 2 + vNEU[2] ** 2))))
 
-    return azymut, elev, h
+    return azymut, elev, h, fi, la
 def tropo_hopfield(H, el):
     c1 = 77.64
     c2 = -12.96
@@ -206,12 +207,9 @@ def bledy_wsp(XYZ_ref, XYZ_obl):
         return XYZ - XYZ_ref
 
     def oblicz_bledy_neu(XYZ):
-        BLH_ref, h = hirvonen(XYZ_ref)
-
+        fi, la, h = hirvonen(XYZ_ref)
         Xrs = np.transpose(np.array(XYZ))
         
-        fi = BLH_ref[0]
-        la = BLH_ref[1]
         neu = np.array([[-math.sin(fi) * math.cos(la), -math.sin(la), math.cos(fi) * math.cos(la)],
                         [-math.sin(fi) * math.sin(la), math.cos(la), math.cos(fi) * math.sin(la)],
                         [math.cos(fi), 0, math.sin(fi)]])
@@ -257,11 +255,12 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
                 Xsrot = popr_wsp(X0s, Y0s, Z0s, we, tau)
                 ro_r_s = math.sqrt(pow((Xsrot[0] - wsp_obs[0]),2) + pow((Xsrot[1] - wsp_obs[1]),2) + pow((Xsrot[2] - wsp_obs[2]),2))
                 # print(sat, ": ", ro_r_s)
-                az, el, H = azymut_elewacja_wys(wsp_obs, Xsrot)
+                az, el, H, fi, la = azymut_elewacja_wys(wsp_obs, Xsrot)
                 tropo = tropo_hopfield(H, el)
+                jono = klobuchar(t, fi, la, el, az, alfa, beta, c)
                 
                 if el >= maska:
-                    Pcalc = ro_r_s - c*delta_t_rel_s + c*delta_t_r + tropo # + jono
+                    Pcalc = ro_r_s - c*delta_t_rel_s + c*delta_t_r# + tropo + jono
                     y = np.append(y, np.array([Pcalc - Pobs[j]]))
                     A_sat = np.array((-(Xsrot[0] - wsp_obs[0])/ro_r_s, -(Xsrot[1] - wsp_obs[1])/ro_r_s, -(Xsrot[2] - wsp_obs[2])/ro_r_s, 1))
                     A = np.vstack((A, A_sat))
@@ -273,6 +272,7 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
             wsp_obs = np.add(wsp_obs, x[0:3])
             delta_t_r += x[3]/c
             tau = ro_r_s/c
+            print(wsp_obs)
 
         wsp_popr = np.vstack((wsp_popr, wsp_obs))
         czas.append(str(datetime.timedelta(seconds=t-tow)))
@@ -293,11 +293,12 @@ def analiza_bledow(bledy):
     min_val = np.amin(bledy, axis=0)
     max_val = np.amax(bledy, axis=0)
 
-    print(mean_square_err)
+    # print(mean_square_err)
     # print(max_val)
 
     return std_dev, mean_square_err, min_val, max_val
 std_dev, mean_square_err, min_val, max_val = analiza_bledow(XYZ_bledy)
+std_dev_neu, mean_square_err_neu, min_val_neu, max_val_neu = analiza_bledow(NEU_bledy)
 
 def wykres_bledow(czas, bledy, xyz_czy_neu):
     fig, axs = plt.subplots(3, sharex=True)
@@ -308,7 +309,7 @@ def wykres_bledow(czas, bledy, xyz_czy_neu):
     neu = ["N", "E", "U"]
 
     for i, ax in enumerate(axs.flat):
-        ax.plot(czas, bledy[0:,[2-i]], alpha = 0.8)
+        ax.plot(czas, bledy[0:,[2-i]], alpha = 0.6)
         # bierz dla kazdego wiersza([0:, ) wsp zyx ([2-i]])
         # zyx zeby kolejnosc na wykresie byla dobra
         if xyz_czy_neu == "xyz":
@@ -405,6 +406,6 @@ def wykres_dop(czas, GDOP, PDOP, TDOP):
 # wykres_bledow(czas, XYZ_bledy, "xyz")
 # wykres_bledow(czas, NEU_bledy, "neu")
 # wykres_l_sats(czas, l_sats)
-wykres_punktowy_n_e(NEU_bledy)
+# wykres_punktowy_n_e(NEU_bledy)
 # wykres_dop(czas, GDOP, PDOP, TDOP)
 # macierz razy trzy wspolrzedne w petli, rtneu to samo co w elewacji

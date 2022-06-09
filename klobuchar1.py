@@ -87,18 +87,18 @@ def klobuchar(tow, phi, lam, el, az, alfa, beta, c):
 
     return dI
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    alfa = [1.6764e-08,  7.4506e-09, -1.1921e-07,  0.0000e+00]
-    beta = [1.1059e+05,  0.0000e+00, -2.6214e+05,  0.0000e+00] 
+#     alfa = [1.6764e-08,  7.4506e-09, -1.1921e-07,  0.0000e+00]
+#     beta = [1.1059e+05,  0.0000e+00, -2.6214e+05,  0.0000e+00] 
     
-    B = 50.4749
-    L = 20.0352
+#     B = 50.4749
+#     L = 20.0352
 
-    el = 30
-    az = 20
+#     el = 30
+#     az = 20
 
-    tow = 86400/2
-    diono = klobuchar(tow, B, L, el, az, alfa, beta, c)
-    print(diono)
+#     tow = 86400/2
+#     diono = klobuchar(tow, B, L, el, az, alfa, beta, c)
+#     print(diono)
 

@@ -36,4 +36,4 @@ def hirvonen(arr):
     H = r/np.cos(B) - N
 
     elips = np.array((B,L,H))
-    return elips, H
+    return B, L, H
