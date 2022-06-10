@@ -17,7 +17,7 @@ nav_file = './kod/nav.rnx'
 obs_file = './kod/obs.rnx'
 
 time_start =  [2022, 3, 21, 0, 0, 0]
-time_end =    [2022, 3, 21, 0, 0, 0] 
+time_end =    [2022, 3, 21, 10, 10, 0] 
 
 nav, inav = readrnxnav(nav_file)
 obs, iobs = readrnxobs(obs_file, time_start, time_end, 'G')
@@ -224,6 +224,14 @@ def bledy_wsp(XYZ_ref, XYZ_obl):
     # print(NEU_bledy)
     
     return XYZ_bledy, NEU_bledy
+def neu(XYZ):
+    fi, la, h = hirvonen(XYZ)    
+    neu = np.array([[-math.sin(fi) * math.cos(la), -math.sin(la), math.cos(fi) * math.cos(la)],
+                    [-math.sin(fi) * math.sin(la), math.cos(la), math.cos(fi) * math.sin(la)],
+                    [math.cos(fi), 0, math.sin(fi)]])
+
+    return neu
+
 
 # Przeliczenie daty początkowej i końcowej do sekund tygodnia GPS
 week, tow = date2tow(time_start)[0:2]
@@ -236,6 +244,8 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
     GDOP = []
     PDOP = []
     TDOP = []
+    HDOP = []
+    VDOP = []
     for t in range(tow, tow_end+1, dt):
 
         sats_input = (iobs[ :,2] == t)
@@ -272,7 +282,8 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
             wsp_obs = np.add(wsp_obs, x[0:3])
             delta_t_r += x[3]/c
             tau = ro_r_s/c
-            print(wsp_obs)
+            NEU_obs = neu(wsp_obs)
+            Qneu = np.dot(np.dot(NEU_obs.T, Q[0:3, 0:3]), NEU_obs)
 
         wsp_popr = np.vstack((wsp_popr, wsp_obs))
         czas.append(str(datetime.timedelta(seconds=t-tow)))
@@ -280,10 +291,12 @@ def wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska):
         GDOP.append(math.sqrt(abs(Q.diagonal()[0] + Q.diagonal()[1] + Q.diagonal()[2] + Q.diagonal()[3])))
         PDOP.append(math.sqrt(abs(Q.diagonal()[0] + Q.diagonal()[1] + Q.diagonal()[2])))
         TDOP.append(math.sqrt(abs(Q.diagonal()[3])))
+        HDOP.append(math.sqrt(abs(Qneu.diagonal()[0] + Qneu.diagonal()[1])))
+        VDOP.append(math.sqrt(abs(Qneu.diagonal()[2])))
   
-    return wsp_popr, czas, l_sats, GDOP, PDOP, TDOP
+    return wsp_popr, czas, l_sats, GDOP, PDOP, TDOP, HDOP, VDOP
 
-XYZ_obl, czas, l_sats, GDOP, PDOP, TDOP = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
+XYZ_obl, czas, l_sats, GDOP, PDOP, TDOP, HDOP, VDOP = wsp_popr(tow, dt, obs, iobs, XYZ_ref, u, we, c, maska)
 XYZ_bledy, NEU_bledy = bledy_wsp(XYZ_ref, XYZ_obl)
 np.savetxt('./wyniki/test.txt', XYZ_bledy, delimiter=', ', fmt='%1.8f')
 
@@ -375,7 +388,7 @@ def wykres_punktowy_n_e(bledy_neu):
         sel.annotation.set_text(text)
 
     plt.show()
-def wykres_dop(czas, GDOP, PDOP, TDOP):
+def wykres_dop(czas, GDOP, PDOP, TDOP, HDOP, VDOP):
     fig, ax = plt.subplots()
     fig.canvas.manager.set_window_title("Wykresy - współczynniki DOP")
     fig.suptitle("Wykresy wartości współczynników DOP")
@@ -384,6 +397,8 @@ def wykres_dop(czas, GDOP, PDOP, TDOP):
     ax.plot(czas, GDOP, alpha = 0.5, label="GDOP")
     ax.plot(czas, PDOP, alpha = 0.5, label="PDOP")
     ax.plot(czas, TDOP, alpha = 0.5, label="TDOP")
+    ax.plot(czas, HDOP, alpha = 0.5, label="HDOP")
+    ax.plot(czas, VDOP, alpha = 0.5, label="VDOP")
 
     ax.xaxis.set_major_locator(MaxNLocator(8))
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
@@ -407,5 +422,5 @@ def wykres_dop(czas, GDOP, PDOP, TDOP):
 # wykres_bledow(czas, NEU_bledy, "neu")
 # wykres_l_sats(czas, l_sats)
 # wykres_punktowy_n_e(NEU_bledy)
-# wykres_dop(czas, GDOP, PDOP, TDOP)
+wykres_dop(czas, GDOP, PDOP, TDOP, HDOP, VDOP)
 # macierz razy trzy wspolrzedne w petli, rtneu to samo co w elewacji
