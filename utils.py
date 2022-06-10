@@ -1,5 +1,6 @@
 import numpy as np
 import linecache
+import re
 import math
 from hirvonen import *
 from klobuchar1 import *
@@ -9,6 +10,19 @@ from matplotlib.ticker import MaxNLocator, FormatStrFormatter
 import mplcursors
 plt.style.use('seaborn-whitegrid')
 
+def alfa_beta(nav_file):
+    alfa = ((linecache.getline(nav_file, 3)).split())[1:5]
+    alfa = [re.sub("D", "E", i) for i in alfa]
+    alfa = [float(i) for i in alfa]
+    alfa = np.array(alfa)
+
+    beta = ((linecache.getline(nav_file, 4)).split())[1:5]
+    beta = [re.sub("D", "E", i) for i in beta]
+    beta = [float(i) for i in beta]
+    beta = np.array(beta)
+
+    return alfa, beta
+    
 def wsp_odbiornika(obs_file):
     # spisanie współrzędnych przybliżonych odbiornika z pliku OBS
     XYZ_ref = ((linecache.getline(obs_file, 12)).split())[0:3]

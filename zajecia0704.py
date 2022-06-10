@@ -1,5 +1,8 @@
 from readrnx_studenci import *
 from utils import *
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QApplication, QMainWindow
+import sys
 
 nav_file = './kod/nav.rnx'
 obs_file = './kod/obs.rnx'
@@ -16,8 +19,7 @@ u = 3.986005 * pow(10, 14)
 we = 7.2921151467 * pow(10, -5)
 c = 299792458.0
 dt = 30
-alfa = [1.6764e-08,  7.4506e-09, -1.1921e-07,  0.0000e+00]
-beta = [1.1059e+05,  0.0000e+00, -2.6214e+05,  0.0000e+00] 
+alfa, beta = alfa_beta(nav_file)
 
 XYZ_ref = wsp_odbiornika(obs_file)
 nav, inav, obs, iobs = porzadek(nav, inav, obs, iobs)
@@ -37,3 +39,15 @@ std_dev_neu, mean_square_err_neu, min_val_neu, max_val_neu = analiza_bledow(NEU_
 # wykres_l_sats(czas, l_sats)
 wykres_punktowy_n_e(NEU_bledy)
 # wykres_dop(czas, GDOP, PDOP, TDOP, HDOP, VDOP)
+
+
+# def window():
+#     app = QApplication(sys.argv)
+#     win = QMainWindow()
+#     win.setGeometry(200, 200, 300, 300)
+#     win.setWindowTitle("SPP")
+
+#     win.show()
+#     sys.exit(app.exec_())
+
+# window()
