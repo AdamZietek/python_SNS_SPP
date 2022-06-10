@@ -22,7 +22,7 @@ def alfa_beta(nav_file):
     beta = np.array(beta)
 
     return alfa, beta
-    
+
 def wsp_odbiornika(obs_file):
     # spisanie współrzędnych przybliżonych odbiornika z pliku OBS
     XYZ_ref = ((linecache.getline(obs_file, 12)).split())[0:3]
@@ -275,6 +275,7 @@ def wsp_popr(tow, tow_end, inav, nav, alfa, beta, dt, obs, iobs, XYZ_ref, u, we,
   
     return wsp_popr, czas, l_sats, GDOP, PDOP, TDOP, HDOP, VDOP
 def analiza_bledow(bledy):
+    mean = bledy.mean(axis=0)
     std_dev = np.std(bledy, axis=0)
     mean_square_err = (np.square(bledy)).mean(axis=0)
     min_val = np.amin(bledy, axis=0)
@@ -283,24 +284,35 @@ def analiza_bledow(bledy):
     # print(mean_square_err)
     # print(max_val)
 
-    return std_dev, mean_square_err, min_val, max_val
+    return mean, std_dev, mean_square_err, min_val, max_val
 
-def wykres_bledow(czas, bledy, xyz_czy_neu):
-    fig, axs = plt.subplots(3, sharex=True)
+def wykres_bledow(czas, bledy, xyz_czy_neu, mean, mean_neu, std_dev, std_dev_neu):
+    fig, axs = plt.subplots(3, sharex=True, figsize=(12, 6))
     fig.canvas.manager.set_window_title("Błędy współrzędnych")
     fig.suptitle("Błędy dla poszczególnych współrzędnych w czasie")
     plt.xlabel("Czas")
     xyz = ["X", "Y", "Z"]
     neu = ["N", "E", "U"]
 
+    mean_arr = np.full(((len(czas),3)), mean)
+    mean_neu_arr = np.full(((len(czas),3)), mean_neu)
+    std_dev_arr = np.full(((len(czas),3)), std_dev)
+    std_dev_neu_arr = np.full(((len(czas),3)), std_dev_neu)
+
     for i, ax in enumerate(axs.flat):
-        ax.plot(czas, bledy[0:,[2-i]], alpha = 0.6)
+        ax.plot(czas, bledy[0:,[2-i]], alpha = 0.7)
         # bierz dla kazdego wiersza([0:, ) wsp zyx ([2-i]])
         # zyx zeby kolejnosc na wykresie byla dobra
         if xyz_czy_neu == "xyz":
             ax.set_ylabel("Błąd " + xyz[2-i] + "[m]")
+            ax.plot(czas, mean_arr[0:,[2-i]], color="red", alpha=0.3)
+            ax.plot(czas, mean_arr[0:,[2-i]] + std_dev_arr[0:,[2-i]], color="orange", alpha=0.3)
+            ax.plot(czas, mean_arr[0:,[2-i]] - std_dev_arr[0:,[2-i]], color="orange", alpha=0.3)
         elif xyz_czy_neu == "neu":
             ax.set_ylabel("Błąd " + neu[2-i] + "[m]")
+            ax.plot(czas, mean_neu_arr[0:,[2-i]], color="red", alpha=0.3)
+            ax.plot(czas, mean_neu_arr[0:,[2-i]] + std_dev_neu_arr[0:,[2-i]], color="orange", alpha=0.3)
+            ax.plot(czas, mean_neu_arr[0:,[2-i]] - std_dev_neu_arr[0:,[2-i]], color="orange", alpha=0.3)
         ax.xaxis.set_major_locator(MaxNLocator(8))
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
@@ -316,7 +328,7 @@ def wykres_bledow(czas, bledy, xyz_czy_neu):
     plt.show()
 def wykres_l_sats(czas, l_sats):
     #plots the histogram
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 6))
     fig.canvas.manager.set_window_title("Liczba satelitów")
     fig.suptitle("Liczba satelitów w czasie")
     ax.set_xlabel("Czas")
@@ -337,7 +349,7 @@ def wykres_l_sats(czas, l_sats):
 
     plt.show()
 def wykres_punktowy_n_e(bledy_neu):
-    fig, axs = plt.subplots()
+    fig, axs = plt.subplots(figsize=(12, 6))
     fig.canvas.manager.set_window_title("Wykres punktowy błędów współrzędnych płaskich n i e")
     fig.suptitle("Błędy poszczególnych współrzędnych n, e w czasie")
 
@@ -361,7 +373,7 @@ def wykres_punktowy_n_e(bledy_neu):
 
     plt.show()
 def wykres_dop(czas, GDOP, PDOP, TDOP, HDOP, VDOP):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 6))
     fig.canvas.manager.set_window_title("Wykresy - współczynniki DOP")
     fig.suptitle("Wykresy wartości współczynników DOP")
     ax.set_xlabel("Czas")
