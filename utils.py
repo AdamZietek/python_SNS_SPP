@@ -260,7 +260,6 @@ def wsp_popr(tow, tow_end, inav, nav, alfa, beta, dt, obs, iobs, XYZ_ref, u, we,
         VDOP.append(math.sqrt(abs(Qneu.diagonal()[2])))
   
     return wsp_popr, czas, l_sats, GDOP, PDOP, TDOP, HDOP, VDOP
-
 def analiza_bledow(bledy):
     std_dev = np.std(bledy, axis=0)
     mean_square_err = (np.square(bledy)).mean(axis=0)
