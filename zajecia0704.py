@@ -92,7 +92,7 @@ class MyWindow(QMainWindow):
         self.btnObs.clicked.connect(self.btnObsClick)
 
     def txtEditObs(self):
-        self.txtEditObs = QtWidgets.QTextEdit("./kod/obs.rnx", self)
+        self.txtEditObs = QtWidgets.QTextEdit("./obs.rnx", self)
         self.txtEditObs.setGeometry(220, 10, 470, 40)
         self.txtEditObs.setReadOnly(True)
 
@@ -106,7 +106,7 @@ class MyWindow(QMainWindow):
         self.btnNav.clicked.connect(self.btnNavClick)
 
     def txtEditNav(self):
-        self.txtEditNav = QtWidgets.QTextEdit("./kod/nav.rnx", self)
+        self.txtEditNav = QtWidgets.QTextEdit("./nav.rnx", self)
         self.txtEditNav.setGeometry(220, 60, 470, 40)
         self.txtEditNav.setReadOnly(True)
 
@@ -237,9 +237,9 @@ class MyWindow(QMainWindow):
 
         self.XYZ_obl, self.czas, self.l_sats, self.GDOP, self.PDOP, self.TDOP, self.HDOP, self.VDOP = wsp_popr(tow, tow_end, inav, nav, alfa, beta, dt, obs, iobs, XYZ_ref, u, we, c, maska)
         self.XYZ_bledy, self.NEU_bledy = bledy_wsp(XYZ_ref, self.XYZ_obl)
-        np.savetxt('./wyniki/XYZ_wyniki.txt', self.XYZ_obl, delimiter=', ', fmt='%1.8f')
-        np.savetxt('./wyniki/XYZ_bledy.txt', self.XYZ_bledy, delimiter=', ', fmt='%1.8f')
-        np.savetxt('./wyniki/NEU_bledy.txt', self.NEU_bledy, delimiter=', ', fmt='%1.8f')
+        np.savetxt('./XYZ_wyniki.txt', self.XYZ_obl, delimiter=', ', fmt='%1.8f')
+        np.savetxt('./XYZ_bledy.txt', self.XYZ_bledy, delimiter=', ', fmt='%1.8f')
+        np.savetxt('./NEU_bledy.txt', self.NEU_bledy, delimiter=', ', fmt='%1.8f')
 
         self.mean, self.std_dev, self.mean_square_err, self.min_val, self.max_val = analiza_bledow(self.XYZ_bledy)
         self.mean_neu, self.std_dev_neu, self.mean_square_err_neu, self.min_val_neu, self.max_val_neu = analiza_bledow(self.NEU_bledy)
