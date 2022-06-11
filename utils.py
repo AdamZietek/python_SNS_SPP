@@ -51,23 +51,20 @@ def get_neu(XYZ):
     return neu
 
 def satpos(tobs, sat_idx, inav, nav, u, we, c):
-    sat_id = sat_idx                                #2
-    ind = (inav == sat_id)                          #3
-    nav1 = nav[ind, :]                              #4
+    sat_id = sat_idx                                
+    ind = (inav == sat_id)                          
+    nav1 = nav[ind, :]                              
 
     dlg = len(nav1[:,17])
-    t = np.full(dlg, tobs)                          #5                              
-    toe_all = nav1[:,17]                            #6
+    t = np.full(dlg, tobs)                                                    
+    toe_all = nav1[:,17]                            
 
-    roznica = abs(toe_all - t)                      #7
-    ind_t = np.argmin(roznica)                      #8   
-    # print(f'{ind_t = }')
+    roznica = abs(toe_all - t)                      
+    ind_t = np.argmin(roznica)                      
 
-    nav0 = nav1[ind_t, :]                           #9
+    nav0 = nav1[ind_t, :]                           
 
-    # === === === === ===
-
-    t0 = t[ind_t]                                   #10
+    t0 = t[ind_t]                                  
     tk = t0 - nav0[17]
 
     a = pow(nav0[16],2)
@@ -108,10 +105,8 @@ def satpos(tobs, sat_idx, inav, nav, u, we, c):
     r_kontrola = math.sqrt(pow(xk,2) + pow(yk,2))
     r_k = math.sqrt(pow(Xk,2) + pow(Yk,2) + pow(Zk, 2))
     test = abs(r_kontrola - r_k)
-    # print(test)
 
     delta_t_s = nav0[6] + nav0[7]*(t0-nav0[17]) + nav0[8]*pow((t0-nav0[17]), 2)
-    # uwaga tutaj w t0-toe+...
 
     delta_t_rel = ((-2*math.sqrt(u))/(pow(c,2)))*nav0[14]*nav0[16]*math.sin(Ek)
     delta_t_rel_s = delta_t_rel + delta_t_s
@@ -136,8 +131,6 @@ def azymut_elewacja_wys(wsp_obs, wsp_sat):
     azymut = np.rad2deg(math.atan2(vNEU[1], vNEU[0]))
     if azymut < 0:
         azymut += np.rad2deg(2 * math.pi)
-    # if azymut >= 180:
-    #     azymut -= 180
     
     elev = abs(np.rad2deg(math.asin(vNEU[2] / math.sqrt(vNEU[0] ** 2 + vNEU[1] ** 2 + vNEU[2] ** 2))))
 
@@ -210,9 +203,6 @@ def bledy_wsp(XYZ_ref, XYZ_obl):
 
     XYZ_bledy = np.apply_along_axis(oblicz_bledy, 1, XYZ_obl)
     NEU_bledy = np.apply_along_axis(oblicz_bledy_neu, 1, XYZ_bledy)
-
-    # print(XYZ_bledy)
-    # print(NEU_bledy)
     
     return XYZ_bledy, NEU_bledy
 
@@ -243,7 +233,6 @@ def wsp_popr(tow, tow_end, inav, nav, alfa, beta, dt, obs, iobs, XYZ_ref, u, we,
                 X0s, Y0s, Z0s, delta_t_rel_s = satpos(tr, sat, inav, nav, u, we, c)
                 Xsrot = popr_wsp(X0s, Y0s, Z0s, we, tau)
                 ro_r_s = math.sqrt(pow((Xsrot[0] - wsp_obs[0]),2) + pow((Xsrot[1] - wsp_obs[1]),2) + pow((Xsrot[2] - wsp_obs[2]),2))
-                # print(sat, ": ", ro_r_s)
                 az, el, H, fi, la = azymut_elewacja_wys(wsp_obs, Xsrot)
                 tropo = tropo_hopfield(H, el)
                 jono = klobuchar(t, fi, la, el, az, alfa, beta, c)
@@ -281,9 +270,6 @@ def analiza_bledow(bledy):
     min_val = np.amin(bledy, axis=0)
     max_val = np.amax(bledy, axis=0)
 
-    # print(mean_square_err)
-    # print(max_val)
-
     return mean, std_dev, mean_square_err, min_val, max_val
 
 def wykres_bledow(czas, bledy, xyz_czy_neu, mean, mean_neu, std_dev, std_dev_neu):
@@ -306,13 +292,13 @@ def wykres_bledow(czas, bledy, xyz_czy_neu, mean, mean_neu, std_dev, std_dev_neu
         if xyz_czy_neu == "xyz":
             ax.set_ylabel("Błąd " + xyz[2-i] + "[m]")
             ax.plot(czas, mean_arr[0:,[2-i]], color="red", alpha=0.5, label="średnia")
-            ax.plot(czas, mean_arr[0:,[2-i]] + std_dev_arr[0:,[2-i]], color="orange", alpha=0.3, label="średnia + odchylenie standardowe")
-            ax.plot(czas, mean_arr[0:,[2-i]] - std_dev_arr[0:,[2-i]], color="orange", alpha=0.3, label="średnia - odchylenie standardowe")
+            ax.plot(czas, mean_arr[0:,[2-i]] + std_dev_arr[0:,[2-i]], color="orange", alpha=0.3, label="+ odchylenie standardowe")
+            ax.plot(czas, mean_arr[0:,[2-i]] - std_dev_arr[0:,[2-i]], color="orange", alpha=0.3, label="- odchylenie standardowe")
         elif xyz_czy_neu == "neu":
             ax.set_ylabel("Błąd " + neu[2-i] + "[m]")
             ax.plot(czas, mean_neu_arr[0:,[2-i]], color="red", alpha=0.5, label="średnia")
-            ax.plot(czas, mean_neu_arr[0:,[2-i]] + std_dev_neu_arr[0:,[2-i]], color="orange", alpha=0.3, label="średnia + odchylenie standardowe")
-            ax.plot(czas, mean_neu_arr[0:,[2-i]] - std_dev_neu_arr[0:,[2-i]], color="orange", alpha=0.3, label="średnia - odchylenie standardowe")
+            ax.plot(czas, mean_neu_arr[0:,[2-i]] + std_dev_neu_arr[0:,[2-i]], color="orange", alpha=0.3, label="+ odchylenie standardowe")
+            ax.plot(czas, mean_neu_arr[0:,[2-i]] - std_dev_neu_arr[0:,[2-i]], color="orange", alpha=0.3, label="- odchylenie standardowe")
         ax.xaxis.set_major_locator(MaxNLocator(8))
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 

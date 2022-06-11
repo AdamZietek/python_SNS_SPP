@@ -171,12 +171,12 @@ class MyWindow(QMainWindow):
     def txtEditKoniecHour(self):
         self.txtEditKoniecHour = QtWidgets.QTextEdit(self)
         self.txtEditKoniecHour.setGeometry(self.startX + 3*96, 170, 86, 40)
-        self.txtEditKoniecHour.setText("0")
+        self.txtEditKoniecHour.setText("12")
         
     def txtEditKoniecMinute(self):
         self.txtEditKoniecMinute = QtWidgets.QTextEdit(self)
         self.txtEditKoniecMinute.setGeometry(self.startX + 4*96, 170, 86, 40)
-        self.txtEditKoniecMinute.setText("30")
+        self.txtEditKoniecMinute.setText("0")
 
     def txtEditKoniecSecond(self):
         self.txtEditKoniecSecond = QtWidgets.QTextEdit(self)
@@ -244,6 +244,13 @@ class MyWindow(QMainWindow):
         self.mean, self.std_dev, self.mean_square_err, self.min_val, self.max_val = analiza_bledow(self.XYZ_bledy)
         self.mean_neu, self.std_dev_neu, self.mean_square_err_neu, self.min_val_neu, self.max_val_neu = analiza_bledow(self.NEU_bledy)
 
+        self.btnWykresBlXYZ.setEnabled(True)
+        self.btnWykresBlNEU.setEnabled(True)
+        self.btnWykresPunktowyNE.setEnabled(True)
+        self.btnWykresLSats.setEnabled(True)
+        self.btnWykresDOP.setEnabled(True)
+        self.btnWyswietlFolderZWynikami.setEnabled(True)
+
         self.txtEditMinX.setText(str(format(self.min_val[0], '.5f')))
         self.txtEditMinY.setText(str(format(self.min_val[1], '.5f')))
         self.txtEditMinZ.setText(str(format(self.min_val[2], '.5f')))
@@ -258,12 +265,12 @@ class MyWindow(QMainWindow):
         self.txtEditMaxE.setText(str(format(self.max_val_neu[1], '.5f')))
         self.txtEditMaxU.setText(str(format(self.max_val_neu[2], '.5f')))
 
-        self.txtEditStdDevX.setText(str(format(self.std_dev[0], '.5f')))
-        self.txtEditStdDevY.setText(str(format(self.std_dev[1], '.5f')))
-        self.txtEditStdDevZ.setText(str(format(self.std_dev[2], '.5f')))
-        self.txtEditStdDevN.setText(str(format(self.std_dev_neu[0], '.5f')))
-        self.txtEditStdDevE.setText(str(format(self.std_dev_neu[1], '.5f')))
-        self.txtEditStdDevU.setText(str(format(self.std_dev_neu[2], '.5f')))
+        self.txtEditStdDevX.setText("± " + str(format(self.std_dev[0], '.5f')))
+        self.txtEditStdDevY.setText("± " + str(format(self.std_dev[1], '.5f')))
+        self.txtEditStdDevZ.setText("± " + str(format(self.std_dev[2], '.5f')))
+        self.txtEditStdDevN.setText("± " + str(format(self.std_dev_neu[0], '.5f')))
+        self.txtEditStdDevE.setText("± " + str(format(self.std_dev_neu[1], '.5f')))
+        self.txtEditStdDevU.setText("± " + str(format(self.std_dev_neu[2], '.5f')))
 
         self.txtEditMSEX.setText(str(format(self.mean_square_err[0], '.5f')))
         self.txtEditMSEY.setText(str(format(self.mean_square_err[1], '.5f')))
@@ -437,6 +444,7 @@ class MyWindow(QMainWindow):
     def btnWykresBlXYZ(self):
         self.btnWykresBlXYZ = QtWidgets.QPushButton("Wykresy liniowe wartości poszczególnych błędów współrzędnych XYZ", self)
         self.btnWykresBlXYZ.setGeometry(10, 600, 680, 40)
+        self.btnWykresBlXYZ.setEnabled(False)
         self.btnWykresBlXYZ.clicked.connect(self.btnWykresBlXYZClick)
 
     def btnWykresBlXYZClick(self):
@@ -445,6 +453,7 @@ class MyWindow(QMainWindow):
     def btnWykresBlNEU(self):
         self.btnWykresBlNEU = QtWidgets.QPushButton("Wykresy liniowe wartości poszczególnych błędów współrzędnych NEU", self)
         self.btnWykresBlNEU.setGeometry(10, 650, 680, 40)
+        self.btnWykresBlNEU.setEnabled(False)
         self.btnWykresBlNEU.clicked.connect(self.btnWykresBlNEUClick)
 
     def btnWykresBlNEUClick(self):
@@ -453,6 +462,7 @@ class MyWindow(QMainWindow):
     def btnWykresLSats(self):
         self.btnWykresLSats = QtWidgets.QPushButton("Wykres liczby satelitów", self)
         self.btnWykresLSats.setGeometry(10, 700, 680, 40)
+        self.btnWykresLSats.setEnabled(False)
         self.btnWykresLSats.clicked.connect(self.btnWykresLSatsClick)
 
     def btnWykresLSatsClick(self):
@@ -461,6 +471,7 @@ class MyWindow(QMainWindow):
     def btnWykresPunktowyNE(self):
         self.btnWykresPunktowyNE = QtWidgets.QPushButton("Wykres punktowy błędów współrzędnych płaskich n i e", self)
         self.btnWykresPunktowyNE.setGeometry(10, 750, 680, 40)
+        self.btnWykresPunktowyNE.setEnabled(False)
         self.btnWykresPunktowyNE.clicked.connect(self.btnWykresPunktowyNEClick)
 
     def btnWykresPunktowyNEClick(self):
@@ -469,6 +480,7 @@ class MyWindow(QMainWindow):
     def btnWykresDOP(self):
         self.btnWykresDOP = QtWidgets.QPushButton("Wykres współczynników DOP", self)
         self.btnWykresDOP.setGeometry(10, 800, 680, 40)
+        self.btnWykresDOP.setEnabled(False)
         self.btnWykresDOP.clicked.connect(self.btnWykresDOPClick)
 
     def btnWykresDOPClick(self):
@@ -477,46 +489,15 @@ class MyWindow(QMainWindow):
     def btnWyswietlFolderZWynikami(self):
         self.btnWyswietlFolderZWynikami = QtWidgets.QPushButton("Otwórz folder w wynikami zapisanymi w plikach tekstowych", self)
         self.btnWyswietlFolderZWynikami.setGeometry(10, 850, 680, 40)
-        # self.btnWykresDOP.clicked.connect(self.btnWykresDOPClick)
+        self.btnWyswietlFolderZWynikami.setEnabled(False)
+        self.btnWyswietlFolderZWynikami.clicked.connect(self.btnWyswietlFolderZWynikamiClick)
+
+    def btnWyswietlFolderZWynikamiClick(self):
+        plik = QFileDialog(self)
+        plik.exec_()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     win = MyWindow()
     win.show()
     sys.exit(app.exec_())
-
-# nav_file = './kod/nav.rnx'
-# obs_file = './kod/obs.rnx'
-
-# time_start =  [2022, 3, 21, 0, 0, 0]
-# time_end =    [2022, 3, 21, 20, 10, 0]
-
-# nav, inav = readrnxnav(nav_file)
-# obs, iobs = readrnxobs(obs_file, time_start, time_end, 'G')
-
-# # stale
-# maska = 10
-# u = 3.986005 * pow(10, 14)
-# we = 7.2921151467 * pow(10, -5)
-# c = 299792458.0
-# dt = 30
-# alfa, beta = alfa_beta(nav_file)
-
-# XYZ_ref = wsp_odbiornika(obs_file)
-# nav, inav, obs, iobs = porzadek(nav, inav, obs, iobs)
-
-# week, tow = date2tow(time_start)[0:2]
-# week_end, tow_end = date2tow(time_end)[0:2]
-
-# XYZ_obl, czas, l_sats, GDOP, PDOP, TDOP, HDOP, VDOP = wsp_popr(tow, tow_end, inav, nav, alfa, beta, dt, obs, iobs, XYZ_ref, u, we, c, maska)
-# XYZ_bledy, NEU_bledy = bledy_wsp(XYZ_ref, XYZ_obl)
-# np.savetxt('./wyniki/test.txt', XYZ_bledy, delimiter=', ', fmt='%1.8f')
-
-# mean, std_dev, mean_square_err, min_val, max_val = analiza_bledow(XYZ_bledy)
-# mean_neu, std_dev_neu, mean_square_err_neu, min_val_neu, max_val_neu = analiza_bledow(NEU_bledy)
-
-# wykres_bledow(czas, XYZ_bledy, "xyz", mean, mean_neu, std_dev, std_dev_neu)
-# # wykres_bledow(czas, NEU_bledy, "neu", mean, mean_neu, std_dev, std_dev_neu)
-# # wykres_l_sats(czas, l_sats)
-# # wykres_punktowy_n_e(NEU_bledy)
-# # wykres_dop(czas, GDOP, PDOP, TDOP, HDOP, VDOP)
