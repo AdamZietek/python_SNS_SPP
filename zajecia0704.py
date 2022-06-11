@@ -39,6 +39,46 @@ class MyWindow(QMainWindow):
 
         self.btnUruchom()
 
+        self.labelX()
+        self.labelY()
+        self.labelZ()
+        self.labelN()
+        self.labelE()
+        self.labelU()
+
+        self.labelMin()
+        self.labelMax()
+        self.labelStdDev()
+        self.labelMSE()
+
+        self.txtEditMinX()
+        self.txtEditMinY()
+        self.txtEditMinZ()
+        self.txtEditMinN()
+        self.txtEditMinE()
+        self.txtEditMinU()
+
+        self.txtEditMaxX()
+        self.txtEditMaxY()
+        self.txtEditMaxZ()
+        self.txtEditMaxN()
+        self.txtEditMaxE()
+        self.txtEditMaxU()
+        
+        self.txtEditStdDevX()
+        self.txtEditStdDevY()
+        self.txtEditStdDevZ()
+        self.txtEditStdDevN()
+        self.txtEditStdDevE()
+        self.txtEditStdDevU()
+
+        self.txtEditMSEX()
+        self.txtEditMSEY()
+        self.txtEditMSEZ()
+        self.txtEditMSEN()
+        self.txtEditMSEE()
+        self.txtEditMSEU()
+
         self.btnWykresBlXYZ()
         self.btnWykresBlNEU()
         self.btnWykresLSats()
@@ -157,8 +197,6 @@ class MyWindow(QMainWindow):
         self.btnUruchom.setGeometry(10, 280, 680, 40)
         self.btnUruchom.clicked.connect(self.btnUruchomClick)
 
-        # 320 + 20
-
     def btnUruchomClick(self):
         nav_file = self.txtEditNav.toPlainText()
         obs_file = self.txtEditObs.toPlainText()
@@ -203,10 +241,198 @@ class MyWindow(QMainWindow):
         np.savetxt('./wyniki/XYZ_bledy.txt', self.XYZ_bledy, delimiter=', ', fmt='%1.8f')
         np.savetxt('./wyniki/NEU_bledy.txt', self.NEU_bledy, delimiter=', ', fmt='%1.8f')
 
-        self.mean, self.std_dev, mean_square_err, min_val, max_val = analiza_bledow(self.XYZ_bledy)
-        self.mean_neu, self.std_dev_neu, mean_square_err_neu, min_val_neu, max_val_neu = analiza_bledow(self.NEU_bledy)
+        self.mean, self.std_dev, self.mean_square_err, self.min_val, self.max_val = analiza_bledow(self.XYZ_bledy)
+        self.mean_neu, self.std_dev_neu, self.mean_square_err_neu, self.min_val_neu, self.max_val_neu = analiza_bledow(self.NEU_bledy)
+
+        self.txtEditMinX.setText(str(format(self.min_val[0], '.5f')))
+        self.txtEditMinY.setText(str(format(self.min_val[1], '.5f')))
+        self.txtEditMinZ.setText(str(format(self.min_val[2], '.5f')))
+        self.txtEditMinN.setText(str(format(self.min_val_neu[0], '.5f')))
+        self.txtEditMinE.setText(str(format(self.min_val_neu[1], '.5f')))
+        self.txtEditMinU.setText(str(format(self.min_val_neu[2], '.5f')))
+
+        self.txtEditMaxX.setText(str(format(self.max_val[0], '.5f')))
+        self.txtEditMaxY.setText(str(format(self.max_val[1], '.5f')))
+        self.txtEditMaxZ.setText(str(format(self.max_val[2], '.5f')))
+        self.txtEditMaxN.setText(str(format(self.max_val_neu[0], '.5f')))
+        self.txtEditMaxE.setText(str(format(self.max_val_neu[1], '.5f')))
+        self.txtEditMaxU.setText(str(format(self.max_val_neu[2], '.5f')))
+
+        self.txtEditStdDevX.setText(str(format(self.std_dev[0], '.5f')))
+        self.txtEditStdDevY.setText(str(format(self.std_dev[1], '.5f')))
+        self.txtEditStdDevZ.setText(str(format(self.std_dev[2], '.5f')))
+        self.txtEditStdDevN.setText(str(format(self.std_dev_neu[0], '.5f')))
+        self.txtEditStdDevE.setText(str(format(self.std_dev_neu[1], '.5f')))
+        self.txtEditStdDevU.setText(str(format(self.std_dev_neu[2], '.5f')))
+
+        self.txtEditMSEX.setText(str(format(self.mean_square_err[0], '.5f')))
+        self.txtEditMSEY.setText(str(format(self.mean_square_err[1], '.5f')))
+        self.txtEditMSEZ.setText(str(format(self.mean_square_err[2], '.5f')))
+        self.txtEditMSEN.setText(str(format(self.mean_square_err_neu[0], '.5f')))
+        self.txtEditMSEE.setText(str(format(self.mean_square_err_neu[1], '.5f')))
+        self.txtEditMSEU.setText(str(format(self.mean_square_err_neu[2], '.5f')))
 
         print(self.mean_neu)
+    
+    def labelX(self):
+        self.labelX = QtWidgets.QLabel("X:", self)
+        self.labelX.setGeometry(self.startX, 340, 86, 40)
+
+    def labelY(self):
+        self.labelY = QtWidgets.QLabel("Y:", self)
+        self.labelY.setGeometry(self.startX + 96, 340, 86, 40)
+
+    def labelZ(self):
+        self.labelZ = QtWidgets.QLabel("Z:", self)
+        self.labelZ.setGeometry(self.startX + 2*96, 340, 86, 40)
+
+    def labelN(self):
+        self.labelN = QtWidgets.QLabel("N:", self)
+        self.labelN.setGeometry(self.startX + 3*96, 340, 86, 40)
+
+    def labelE(self):
+        self.labelE = QtWidgets.QLabel("E:", self)
+        self.labelE.setGeometry(self.startX + 4*96, 340, 86, 40)
+
+    def labelU(self):
+        self.labelU = QtWidgets.QLabel("U:", self)
+        self.labelU.setGeometry(self.startX + 5*96, 340, 86, 40)
+
+    def labelMin(self):
+        self.labelMin = QtWidgets.QLabel("dMin:", self)
+        self.labelMin.setGeometry(10, 390, 120, 40)
+
+    def labelMax(self):
+        self.labelMax = QtWidgets.QLabel("dMax:", self)
+        self.labelMax.setGeometry(10, 440, 120, 40)
+
+    def labelStdDev(self):
+        self.labelStdDev = QtWidgets.QLabel("Std dev.:", self)
+        self.labelStdDev.setGeometry(10, 490, 120, 40)
+
+    def labelMSE(self):
+        self.labelMSE = QtWidgets.QLabel("MSE:", self)
+        self.labelMSE.setGeometry(10, 540, 120, 40)
+
+    def txtEditMinX(self):
+        self.txtEditMinX = QtWidgets.QTextEdit(self)
+        self.txtEditMinX.setGeometry(self.startX, 390, 86, 40)
+        self.txtEditMinX.setReadOnly(True)
+
+    def txtEditMinY(self):
+        self.txtEditMinY = QtWidgets.QTextEdit(self)
+        self.txtEditMinY.setGeometry(self.startX + 96, 390, 86, 40)
+        self.txtEditMinY.setReadOnly(True)
+
+    def txtEditMinZ(self):
+        self.txtEditMinZ = QtWidgets.QTextEdit(self)
+        self.txtEditMinZ.setGeometry(self.startX + 2*96, 390, 86, 40)
+        self.txtEditMinZ.setReadOnly(True)
+
+    def txtEditMinN(self):
+        self.txtEditMinN = QtWidgets.QTextEdit(self)
+        self.txtEditMinN.setGeometry(self.startX + 3*96, 390, 86, 40)
+        self.txtEditMinN.setReadOnly(True)
+
+    def txtEditMinE(self):
+        self.txtEditMinE = QtWidgets.QTextEdit(self)
+        self.txtEditMinE.setGeometry(self.startX + 4*96, 390, 86, 40)
+        self.txtEditMinE.setReadOnly(True)
+
+    def txtEditMinU(self):
+        self.txtEditMinU = QtWidgets.QTextEdit(self)
+        self.txtEditMinU.setGeometry(self.startX + 5*96, 390, 86, 40)
+        self.txtEditMinU.setReadOnly(True)
+
+    def txtEditMaxX(self):
+        self.txtEditMaxX = QtWidgets.QTextEdit(self)
+        self.txtEditMaxX.setGeometry(self.startX, 440, 86, 40)
+        self.txtEditMaxX.setReadOnly(True)
+
+    def txtEditMaxY(self):
+        self.txtEditMaxY = QtWidgets.QTextEdit(self)
+        self.txtEditMaxY.setGeometry(self.startX + 96, 440, 86, 40)
+        self.txtEditMaxY.setReadOnly(True)
+
+    def txtEditMaxZ(self):
+        self.txtEditMaxZ = QtWidgets.QTextEdit(self)
+        self.txtEditMaxZ.setGeometry(self.startX + 2*96, 440, 86, 40)
+        self.txtEditMaxZ.setReadOnly(True)
+
+    def txtEditMaxN(self):
+        self.txtEditMaxN = QtWidgets.QTextEdit(self)
+        self.txtEditMaxN.setGeometry(self.startX + 3*96, 440, 86, 40)
+        self.txtEditMaxN.setReadOnly(True)
+
+    def txtEditMaxE(self):
+        self.txtEditMaxE = QtWidgets.QTextEdit(self)
+        self.txtEditMaxE.setGeometry(self.startX + 4*96, 440, 86, 40)
+        self.txtEditMaxE.setReadOnly(True)
+
+    def txtEditMaxU(self):
+        self.txtEditMaxU = QtWidgets.QTextEdit(self)
+        self.txtEditMaxU.setGeometry(self.startX + 5*96, 440, 86, 40)
+        self.txtEditMaxU.setReadOnly(True)
+
+    def txtEditStdDevX(self):
+        self.txtEditStdDevX = QtWidgets.QTextEdit(self)
+        self.txtEditStdDevX.setGeometry(self.startX, 490, 86, 40)
+        self.txtEditStdDevX.setReadOnly(True)
+
+    def txtEditStdDevY(self):
+        self.txtEditStdDevY = QtWidgets.QTextEdit(self)
+        self.txtEditStdDevY.setGeometry(self.startX + 96, 490, 86, 40)
+        self.txtEditStdDevY.setReadOnly(True)
+
+    def txtEditStdDevZ(self):
+        self.txtEditStdDevZ = QtWidgets.QTextEdit(self)
+        self.txtEditStdDevZ.setGeometry(self.startX + 2*96, 490, 86, 40)
+        self.txtEditStdDevZ.setReadOnly(True)
+
+    def txtEditStdDevN(self):
+        self.txtEditStdDevN = QtWidgets.QTextEdit(self)
+        self.txtEditStdDevN.setGeometry(self.startX + 3*96, 490, 86, 40)
+        self.txtEditStdDevN.setReadOnly(True)
+
+    def txtEditStdDevE(self):
+        self.txtEditStdDevE = QtWidgets.QTextEdit(self)
+        self.txtEditStdDevE.setGeometry(self.startX + 4*96, 490, 86, 40)
+        self.txtEditStdDevE.setReadOnly(True)
+
+    def txtEditStdDevU(self):
+        self.txtEditStdDevU = QtWidgets.QTextEdit(self)
+        self.txtEditStdDevU.setGeometry(self.startX + 5*96, 490, 86, 40)
+        self.txtEditStdDevU.setReadOnly(True)
+
+    def txtEditMSEX(self):
+        self.txtEditMSEX = QtWidgets.QTextEdit(self)
+        self.txtEditMSEX.setGeometry(self.startX, 540, 86, 40)
+        self.txtEditMSEX.setReadOnly(True)
+
+    def txtEditMSEY(self):
+        self.txtEditMSEY = QtWidgets.QTextEdit(self)
+        self.txtEditMSEY.setGeometry(self.startX + 96, 540, 86, 40)
+        self.txtEditMSEY.setReadOnly(True)
+
+    def txtEditMSEZ(self):
+        self.txtEditMSEZ = QtWidgets.QTextEdit(self)
+        self.txtEditMSEZ.setGeometry(self.startX + 2*96, 540, 86, 40)
+        self.txtEditMSEZ.setReadOnly(True)
+
+    def txtEditMSEN(self):
+        self.txtEditMSEN = QtWidgets.QTextEdit(self)
+        self.txtEditMSEN.setGeometry(self.startX + 3*96, 540, 86, 40)
+        self.txtEditMSEN.setReadOnly(True)
+
+    def txtEditMSEE(self):
+        self.txtEditMSEE = QtWidgets.QTextEdit(self)
+        self.txtEditMSEE.setGeometry(self.startX + 4*96, 540, 86, 40)
+        self.txtEditMSEE.setReadOnly(True)
+
+    def txtEditMSEU(self):
+        self.txtEditMSEU = QtWidgets.QTextEdit(self)
+        self.txtEditMSEU.setGeometry(self.startX + 5*96, 540, 86, 40)
+        self.txtEditMSEU.setReadOnly(True)
 
     def btnWykresBlXYZ(self):
         self.btnWykresBlXYZ = QtWidgets.QPushButton("Wykresy liniowe wartości poszczególnych błędów współrzędnych XYZ", self)
@@ -222,7 +448,7 @@ class MyWindow(QMainWindow):
         self.btnWykresBlNEU.clicked.connect(self.btnWykresBlNEUClick)
 
     def btnWykresBlNEUClick(self):
-        wykres_bledow(self.czas, self.XYZ_bledy, "neu", self.mean, self.mean_neu, self.std_dev, self.std_dev_neu)
+        wykres_bledow(self.czas, self.NEU_bledy, "neu", self.mean, self.mean_neu, self.std_dev, self.std_dev_neu)
 
     def btnWykresLSats(self):
         self.btnWykresLSats = QtWidgets.QPushButton("Wykres liczby satelitów", self)

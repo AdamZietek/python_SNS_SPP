@@ -305,14 +305,14 @@ def wykres_bledow(czas, bledy, xyz_czy_neu, mean, mean_neu, std_dev, std_dev_neu
         # zyx zeby kolejnosc na wykresie byla dobra
         if xyz_czy_neu == "xyz":
             ax.set_ylabel("Błąd " + xyz[2-i] + "[m]")
-            ax.plot(czas, mean_arr[0:,[2-i]], color="red", alpha=0.3)
-            ax.plot(czas, mean_arr[0:,[2-i]] + std_dev_arr[0:,[2-i]], color="orange", alpha=0.3)
-            ax.plot(czas, mean_arr[0:,[2-i]] - std_dev_arr[0:,[2-i]], color="orange", alpha=0.3)
+            ax.plot(czas, mean_arr[0:,[2-i]], color="red", alpha=0.5, label="średnia")
+            ax.plot(czas, mean_arr[0:,[2-i]] + std_dev_arr[0:,[2-i]], color="orange", alpha=0.3, label="średnia + odchylenie standardowe")
+            ax.plot(czas, mean_arr[0:,[2-i]] - std_dev_arr[0:,[2-i]], color="orange", alpha=0.3, label="średnia - odchylenie standardowe")
         elif xyz_czy_neu == "neu":
             ax.set_ylabel("Błąd " + neu[2-i] + "[m]")
-            ax.plot(czas, mean_neu_arr[0:,[2-i]], color="red", alpha=0.3)
-            ax.plot(czas, mean_neu_arr[0:,[2-i]] + std_dev_neu_arr[0:,[2-i]], color="orange", alpha=0.3)
-            ax.plot(czas, mean_neu_arr[0:,[2-i]] - std_dev_neu_arr[0:,[2-i]], color="orange", alpha=0.3)
+            ax.plot(czas, mean_neu_arr[0:,[2-i]], color="red", alpha=0.5, label="średnia")
+            ax.plot(czas, mean_neu_arr[0:,[2-i]] + std_dev_neu_arr[0:,[2-i]], color="orange", alpha=0.3, label="średnia + odchylenie standardowe")
+            ax.plot(czas, mean_neu_arr[0:,[2-i]] - std_dev_neu_arr[0:,[2-i]], color="orange", alpha=0.3, label="średnia - odchylenie standardowe")
         ax.xaxis.set_major_locator(MaxNLocator(8))
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
